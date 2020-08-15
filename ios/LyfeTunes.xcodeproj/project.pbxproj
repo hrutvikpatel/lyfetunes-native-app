@@ -178,7 +178,6 @@
 				00808AC62DB01A3FC5B3100F /* Pods-LyfeTunes-LyfeTunesTests.debug.xcconfig */,
 				606E72D2134955A358D6B95B /* Pods-LyfeTunes-LyfeTunesTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -668,7 +667,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.lyfetunes;
+				PRODUCT_BUNDLE_IDENTIFIER = org.lyfetunes;
 				PRODUCT_NAME = LyfeTunes;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -691,7 +690,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.lyfetunes;
+				PRODUCT_BUNDLE_IDENTIFIER = org.lyfetunes;
 				PRODUCT_NAME = LyfeTunes;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

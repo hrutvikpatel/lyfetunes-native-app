@@ -2,13 +2,15 @@ import { StyleSheet, Dimensions } from 'react-native';
 import { EdgeInsets } from 'react-native-safe-area-context';
 
 export default (theme: any, barHeight: number, insets: EdgeInsets) => StyleSheet.create({
-  flatListContainer: {
-    width: "100%",
-    height: Dimensions.get("window").height,
-    backgroundColor: "yellow"
+  searchBar: {
+    marginLeft: 10,
+    marginRight: 10,
   },
-  contentContainerStyle: {
-    paddingTop: insets.top + 10,
-    paddingBottom: barHeight + insets.bottom + 10,
+  chipView: {
+    flexWrap: "wrap",
+    flexDirection: "row",
+  },
+  chip: {
+    margin: 5,
   }
 });

@@ -1,7 +1,11 @@
 import React from 'react';
-import { AppContextProvider } from './src/config/AppContextProvider';
+import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { AppContextProvider } from './src/config/AppContextProvider';
 import AppNavigator from './src/config/AppNavigator';
+import store from './src/store/store';
+
 // import SplashScreen from 'react-native-splash-screen';
 
 // when app in the production the uri should be the deployed api link
@@ -16,11 +20,13 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <AppContextProvider>
-        <SafeAreaProvider>
-          <AppNavigator />
-        </SafeAreaProvider>
-      </AppContextProvider>
+      <Provider store={store}>
+        <AppContextProvider>
+          <SafeAreaProvider>
+            <AppNavigator />
+          </SafeAreaProvider>
+        </AppContextProvider>
+      </Provider>
     );
   }
 }

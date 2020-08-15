@@ -300,7 +300,11 @@ PODS:
     - React-Core (= 0.63.2)
     - React-cxxreact (= 0.63.2)
     - React-jsi (= 0.63.2)
+  - RNCAsyncStorage (1.11.0):
+    - React
   - RNCMaskedView (0.1.10):
+    - React
+  - RNDeviceInfo (5.6.4):
     - React
   - RNEventEmitter (1.0.15):
     - React
@@ -308,7 +312,7 @@ PODS:
     - React
   - RNScreens (2.10.1):
     - React
-  - RNSpotifyRemote (0.2.1):
+  - RNSpotifyRemote (0.3.2):
     - React-Core
   - RNVectorIcons (7.0.0):
     - React
@@ -365,7 +369,9 @@ DEPENDENCIES:
   - React-RCTText (from `../node_modules/react-native/Libraries/Text`)
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
   - "RNCMaskedView (from `../node_modules/@react-native-community/masked-view`)"
+  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNEventEmitter (from `../node_modules/react-native-events`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -443,8 +449,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/Vibration"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNCAsyncStorage:
+    :path: "../node_modules/@react-native-community/async-storage"
   RNCMaskedView:
     :path: "../node_modules/@react-native-community/masked-view"
+  RNDeviceInfo:
+    :path: "../node_modules/react-native-device-info"
   RNEventEmitter:
     :path: "../node_modules/react-native-events"
   RNGestureHandler:
@@ -497,11 +507,13 @@ SPEC CHECKSUMS:
   React-RCTText: 1b6773e776e4b33f90468c20fe3b16ca3e224bb8
   React-RCTVibration: 4d2e726957f4087449739b595f107c0d4b6c2d2d
   ReactCommon: a0a1edbebcac5e91338371b72ffc66aa822792ce
+  RNCAsyncStorage: d059c3ee71738c39834a627476322a5a8cd5bf36
   RNCMaskedView: 5a8ec07677aa885546a0d98da336457e2bea557f
+  RNDeviceInfo: a576aac2f2927eb7e0058a27dad811c8e7cd1474
   RNEventEmitter: db22b54ae7d9be0bd5725613f79a51e2bc364a93
   RNGestureHandler: b6b359bb800ae399a9c8b27032bdbf7c18f08a08
   RNScreens: b748efec66e095134c7166ca333b628cd7e6f3e2
-  RNSpotifyRemote: d4e8501e7d8e36b27492dc5a4c15bdb221385289
+  RNSpotifyRemote: fbba4c63918ceb00f9ca20996e737c3f10613ca3
   RNVectorIcons: da6fe858f5a65d7bbc3379540a889b0b12aa5976
   Yoga: 7740b94929bbacbddda59bf115b5317e9a161598
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a

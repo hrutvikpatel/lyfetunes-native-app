@@ -5,6 +5,6 @@ export const Light = {
   roundness: 15,
   colors: {
     ...DefaultTheme.colors,
-    background: "#FFFFFF"
+    background: "#FFFFFF",
   },
 };

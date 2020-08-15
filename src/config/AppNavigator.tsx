@@ -11,7 +11,6 @@ const AppNavigator = () => (
     <NavigationContainer>
         <Stack.Navigator
             headerMode='none'
-            initialRouteName='Signup'
         >
             <Stack.Screen
                 name='Signup'

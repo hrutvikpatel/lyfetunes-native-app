@@ -21,6 +21,7 @@ export default (theme: any) => StyleSheet.create({
     backgroundColor: "#1DB954",
     padding: 5,
     borderRadius: 20,
+    width: '100%',
   },
   labelStyle: {
     fontSize: 16,

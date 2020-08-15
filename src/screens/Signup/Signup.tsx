@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
-  Image, ImageBackground,
+  Image, ImageBackground, Alert,
 } from "react-native";
 import {
   withTheme,
@@ -9,21 +9,39 @@ import {
   Caption,
   Button,
 } from 'react-native-paper';
+import { connect } from 'react-redux';
+import { setIsNotNewTrack, setSeedArtists } from '../../actions';
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
 
+import SpotifyService from '../../utility/SpotifyService';
 import jsx from './Signup.style';
 
 export interface iSignup {
   theme: any,
   navigation: any,
+  setSeedArtists: (seedArtists: string[]) => void,
+  setIsNotNewTrack: (isNotNewTrackSet: Set<string>) => void,
 };
 
-const Signup = (props : iSignup) => {
+const Signup = (props: iSignup) => {
   const styles = jsx(props.theme);
 
   const handleAuth = async() => {
+    try {
+      const instance = SpotifyService.getInstance();
+      await instance.authorize();
+      const seedArtists = await instance.getSeedArtists();
+      const _nonPlayableTracks = await instance.getTopNonPlayableTracks();
+      props.setSeedArtists(seedArtists);
+      props.setIsNotNewTrack(_nonPlayableTracks);
 
+      props.navigation.navigate("Home");
+    }
+    catch (error) {
+      Alert.alert(error);
+    }
   };
 
   return (
@@ -33,8 +51,8 @@ const Signup = (props : iSignup) => {
         contentContainerStyle={styles.contentContainerStyle}
       >
         <List.Section style={styles.header}>
-          <Title>{"LyfeTunes"}</Title>
-          <Caption>Discovering music made easier.</Caption>
+          <Title>LyfeTunes</Title>
+          <Caption>Discover new tracks by listening to the best parts first.</Caption>
         </List.Section>
 
         <List.Section>
@@ -63,4 +81,9 @@ const Signup = (props : iSignup) => {
   );
 };
 
-export default withTheme(Signup);
+const mapDispatchToProps = (dispatch: Function) => ({
+  setSeedArtists: (seedArtists: string[]) => dispatch(setSeedArtists(seedArtists)),
+  setIsNotNewTrack: (isNotNewTrackSet: Set<string>) => dispatch(setIsNotNewTrack(isNotNewTrackSet)),
+});
+
+export default connect(null, mapDispatchToProps)(withTheme(Signup));
