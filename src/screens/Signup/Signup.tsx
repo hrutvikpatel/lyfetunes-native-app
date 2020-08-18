@@ -45,7 +45,9 @@ const Signup = (props: iSignup) => {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView
+      style={{ backgroundColor: props.theme.colors.surface }}
+    >
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainerStyle}

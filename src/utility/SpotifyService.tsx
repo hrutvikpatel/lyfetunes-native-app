@@ -43,7 +43,7 @@ class SpotifyService implements iSpotifyService {
         ApiScope.PlaylistReadPrivateScope,
         ApiScope.UserLibraryReadScope,
         ApiScope.UserTopReadScope,
-      ]
+      ],
     };
     this._session = {
       accessToken: '',
@@ -137,7 +137,7 @@ class SpotifyService implements iSpotifyService {
       }
     });
 
-    return { playableTracks, nonPlayableTracks }
+    return playableTracks;
   };
 
   getRandomSeedArtists = (seedArtists: string[]): string[] => {

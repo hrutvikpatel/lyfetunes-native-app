@@ -2,15 +2,21 @@ import { StyleSheet, Dimensions } from 'react-native';
 import { EdgeInsets } from 'react-native-safe-area-context';
 
 export default (theme: any, barHeight: number, insets: EdgeInsets) => StyleSheet.create({
-  searchBar: {
-    marginLeft: 10,
-    marginRight: 10,
+  progressBar: {
+    paddingTop: 10,
   },
-  chipView: {
-    flexWrap: "wrap",
-    flexDirection: "row",
+  duration: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  chip: {
-    margin: 5,
-  }
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
 });

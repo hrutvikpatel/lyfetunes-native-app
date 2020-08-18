@@ -10,7 +10,7 @@ export default (theme: any) => StyleSheet.create({
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: "40%"
+    paddingTop: "40%",
   },
   header: {
     justifyContent: "center",
