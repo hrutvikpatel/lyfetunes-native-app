@@ -137,7 +137,7 @@ class SpotifyService implements iSpotifyService {
       }
     });
 
-    return playableTracks;
+    return { playableTracks, nonPlayableTracks };
   };
 
   getRandomSeedArtists = (seedArtists: string[]): string[] => {

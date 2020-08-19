@@ -19,4 +19,7 @@ export default (theme: any, barHeight: number, insets: EdgeInsets) => StyleSheet
     flexDirection: 'row',
     justifyContent: 'center',
   },
+  disabledIconStyle: {
+    backgroundColor: theme.colors.disabled
+  }
 });

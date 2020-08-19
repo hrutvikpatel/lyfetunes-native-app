@@ -2,19 +2,13 @@ import React, { useEffect, useState } from "react";
 import { View, Alert, Dimensions } from 'react-native';
 import {
   withTheme,
-  ProgressBar,
-  Caption,
   Paragraph,
-  List,
-  Button,
-  Title
 } from 'react-native-paper';
-import { Icon } from 'react-native-elements';
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { connect } from 'react-redux';
 import { Player } from '@react-native-community/audio-toolkit';
 
-import { setIsNotNewTrack, setTracks } from '../../actions';
+import { setIsNotNewTrack, setTracks, setSavedTracks, setCurrentTrackIndex, setAudio } from '../../actions';
 import jsx from './Home.style';
 import SpotifyService from "../../utility/SpotifyService";
 import { iTrack } from "../../utility/MusicService";
@@ -22,6 +16,7 @@ import Carousel from "react-native-snap-carousel";
 import Track from "../../components/Track/Track";
 import ViewSlider from "../../components/ViewSlider/ViewSlider";
 import SavedTracks from "../../components/SavedTracks/SavedTracks";
+import Controls from "../../components/Controls/Controls";
 
 export interface iHome {
   theme: any,
@@ -29,92 +24,85 @@ export interface iHome {
   seedArtists: string[],
   isNotNewTrackSet: Set<string>,
   tracks: iTrack[],
+  savedTracks: iTrack[],
+  currentTrackIndex: number,
   setIsNotNewTrack: (isNotNewTrackSet: Set<string>) => void,
   setTracks: (tracks: iTrack[]) => void,
+  setSavedTracks: (tracks: iTrack[]) => void,
+  setCurrentTrackIndex: (currentTrackIndex: number) => void,
+  setAudio: (audio: any) => void,
 };
 
 const Home = (props: iHome) => {
   const insets = useSafeAreaInsets();
   const barHeight = 49;
   const styles = jsx(props.theme, barHeight, insets);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [progress, setProgress] = useState(0);
-  const [progressInterval, _setProgressInterval] = useState<any>(undefined);
-  const [audio, setAudio] = useState<any>(undefined);
-  const [duration, setDuration] = useState<string>('');
-  const [currentTime, setCurrentTime] = useState<string>('');
   const [open, setOpenPlaylistMenu] = useState(false);
+  const [previewAudio, setPreviewAudio] = useState<Map<number, any>>(new Map());
 
   const fetchTracks = async (): Promise<void> => {
     try {
+      clearAudioFromMemory();
       const instance = SpotifyService.getInstance();
       const recommendedTrackIds = await instance.getRecommendations(props.seedArtists);
-      const playableTracks = instance.getPlayableTracks(recommendedTrackIds, props.isNotNewTrackSet);
+      const { playableTracks, nonPlayableTracks } = instance.getPlayableTracks(recommendedTrackIds, props.isNotNewTrackSet);
       const tracks = await instance.getServeralTracks(playableTracks);
+      
       props.setTracks(tracks);
+      props.setIsNotNewTrack(nonPlayableTracks);
+      updatePreviewAudio(0, tracks[0]?.previewUrl);
     }
     catch (error) {
       Alert.alert(error);
     }
   };
 
+  const clearAudioFromMemory = () => {
+    props.setAudio(undefined);
+    previewAudio?.forEach((audio, index) => {
+      audio.destroy(() => {
+        console.log('track memory cleared', index)
+      });
+    });
+    setPreviewAudio(new Map());
+  };
+
   useEffect(() => {
     fetchTracks();
-    return clearInterval(progressInterval);
+
+    return () => {
+      clearAudioFromMemory();
+    };
   }, []);
 
-  useEffect(() => {
-    if (props.tracks[currentIndex]) {
-      const nonPlayableTracks = new Set(props.isNotNewTrackSet);
-      props.setIsNotNewTrack(nonPlayableTracks);
-
-      if (audio) {
-        audio.stop();
-        audio.destroy(() => {
-          setAudio(undefined);
-          handleSetPlayer();
-        });
+  const updatePreviewAudio = (currentTrackIndex: number, previewUrl: string) => {
+    try {
+      if (previewAudio.has(currentTrackIndex)) {
+        props.setAudio(previewAudio.get(currentTrackIndex));
       }
       else {
-        handleSetPlayer();
+        const _audio = new Player(previewUrl, { autoDestroy: false })
+          .prepare(() => {
+            _audio.looping = true;
+            setPreviewAudio(previewAudio.set(currentTrackIndex, _audio));
+            props.setAudio(_audio);
+          });
       }
     }
-  }, [props.tracks, currentIndex]);
-
-  const handleSetPlayer = () => {
-    const _audio = new Player(
-      props.tracks[currentIndex].previewUrl,
-      { autoDestroy: false }
-    );
-    setAudio(_audio);
+    catch (error) {
+      console.log(error);
+    }
   };
 
-  useEffect(() => {
-    if (audio) resetProgressBar();
-  }, [audio]);
-
-  const resetProgressBar = () => {
-    clearInterval(progressInterval);
-    setProgress(0);
-
-    audio.looping = true;
-    audio.play(() => {
-      setDuration(getTime(audio.duration));
-    });
-
-    const newInterval = setInterval(() => {
-      const _progress = Math.max(0, audio.currentTime) / audio.duration;
-      setProgress(_progress);
-      setCurrentTime(getTime(Math.max(0, audio.currentTime)));
-    }, 100);
-    _setProgressInterval(newInterval);
+  const onSnapToItem = (index: number) => {
+    console.log('onSnapToItem', {
+      index,
+      trackExists: !props.tracks[index]
+    })
+    if (!props.tracks[index]) return;
+    props.setCurrentTrackIndex(index);
+    updatePreviewAudio(index, props.tracks[index]?.previewUrl);
   };
-
-  const getTime = (time: number) => {
-    const minutes = Math.floor(time / 60000);
-    const seconds = ((time % 60000) / 1000).toFixed(0);
-    return minutes + ":" + (Number(seconds) < 10 ? '0' : '') + seconds;
-  }
 
   return (
     <>
@@ -135,15 +123,20 @@ const Home = (props: iHome) => {
             <Track
               track={item}
               trackIndex={index}
-              currentIndex={currentIndex}
+              currentIndex={props.currentTrackIndex}
             />
           }
           vertical={true}
           itemHeight={Dimensions.get('window').height * 0.60}
           sliderHeight={Dimensions.get('window').height * 0.9}
-          inactiveSlideOpacity={0.4}
-          onSnapToItem={(index: number) => setCurrentIndex(index)}
+          onBeforeSnapToItem={onSnapToItem}
           activeSlideAlignment='start'
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          onScrollBeginDrag={() => {
+            console.log('onScrolBeginDrag');
+            props.setAudio(undefined);
+          }}
         />
       </SafeAreaView>
       <ViewSlider
@@ -154,61 +147,27 @@ const Home = (props: iHome) => {
       >
         {open ?
           <SavedTracks /> :
-          <RenderProgressSection
-            styles={styles}
-            progress={progress}
-            currentTime={currentTime}
-            duration={duration}
-            refresh={() => fetchTracks()}
-            viewPlaylist={setOpenPlaylistMenu}
-          />
+          <Controls />
         }
       </ViewSlider>
     </>
   );
 };
 
-const RenderProgressSection = (props: any) => (
-  <View style={props.styles.progressBar}>
-    <ProgressBar progress={props.progress} />
-    <View style={props.styles.duration}>
-      <Caption>{props.currentTime}</Caption>
-      <Caption>{props.duration}</Caption>
-    </View>
-    <List.Section style={props.styles.actions}>
-      <Icon
-        name="playlist-music"
-        size={24}
-        type='material-community'
-        onPress={() => props.viewPlaylist(true)}
-      />
-      <Button
-        uppercase={true}
-        onPress={() => props.refresh()}
-        mode='contained'
-      >
-        Refresh
-      </Button>
-      <Icon
-        name="playlist-plus"
-        size={24}
-        type='material-community'
-        onPress={() => console.log('Pressed')}
-      />
-    </List.Section>
-  </View>
-);
-
 const mapStateToProps = (state: any) => ({
   seedArtists: state.reducer.seedArtists,
   isNotNewTrackSet: state.reducer.isNotNewTrackSet,
   tracks: state.reducer.tracks,
+  savedTracks: state.reducer.savedTracks,
+  currentTrackIndex: state.reducer.currentTrackIndex,
 });
 
 const mapDispatchToProps = (dispatch: Function) => ({
   setIsNotNewTrack: (isNotNewTrackSet: Set<string>) => dispatch(setIsNotNewTrack(isNotNewTrackSet)),
   setTracks: (tracks: iTrack[]) => dispatch(setTracks(tracks)),
+  setSavedTracks: (savedTracks: iTrack[]) => dispatch(setSavedTracks(savedTracks)),
+  setCurrentTrackIndex: (currentTrackIndex: number) => dispatch(setCurrentTrackIndex(currentTrackIndex)),
+  setAudio: (audio: any) => dispatch(setAudio(audio)),
 });
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(withTheme(Home));
