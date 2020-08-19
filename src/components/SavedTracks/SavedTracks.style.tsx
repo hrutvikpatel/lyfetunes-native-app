@@ -15,6 +15,9 @@ export default (theme: any, insets: EdgeInsets) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start'
   },
+  headerLeftComponentMarkAll: {
+    width: headerComponentWidth,
+  },
   headerCenterComponent: {
     width: headerComponentWidth + 20,
     textAlign: 'center',
@@ -23,6 +26,9 @@ export default (theme: any, insets: EdgeInsets) => StyleSheet.create({
     width: headerComponentWidth,
   },
   flatList: {
-    height: '85%'
-  }
+    height: '85%',
+  },
+  selectionButton: {
+    marginHorizontal: 0,
+  },
 });

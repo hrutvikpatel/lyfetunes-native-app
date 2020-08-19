@@ -44,15 +44,16 @@ const SavedTracks = (props: iSavedTracks) => {
         <Paragraph
           style={styles.headerCenterComponent}
         >
-          SAVED TRACKS
+          Saved Tracks
       </Paragraph>
 
         <Button
+          uppercase={false}
           style={styles.headerRightComponent}
           onPress={() => toggleSelect(!select)}
           disabled={props.savedTracks.length === 0}
         >
-          SELECT
+          {select ? 'Cancel': 'Select'}
       </Button>
       </List.Section>
       <List.Section>
@@ -63,16 +64,33 @@ const SavedTracks = (props: iSavedTracks) => {
           renderItem={RenderTrack}
         />
       </List.Section>
-      {select && 
-      <List.Section>
-      <Icon
-          style={styles.headerLeftComponent}
-          name="keyboard-arrow-down"
-          size={32}
-          type='material-icons'
-          onPress={() => props.onCloseSlider()}
-        />
-    </List.Section>}
+      {select &&
+        <List.Section
+          style={styles.headerContainerStyle}
+        >
+          <Button
+            labelStyle={styles.selectionButton}
+            uppercase={false}
+            style={styles.headerLeftComponentMarkAll}
+          >
+            Mark All
+          </Button>
+          <Button
+            labelStyle={styles.selectionButton}
+            uppercase={false}
+            style={styles.headerCenterComponent}
+          >
+            Add To Playlist
+          </Button>
+          <Button
+            labelStyle={styles.selectionButton}
+            uppercase={false}
+            style={styles.headerRightComponent}
+          >
+            Remove
+          </Button>
+        </List.Section>
+      }
     </>
   );
 };
@@ -81,7 +99,7 @@ const RenderTrack = ({ item, index }: { item: iTrack, index: number }) => (
   <List.Item
     title={item.name}
     description={item.artists?.map((artist) => artist.name).join(', ')}
-    left={ (props) =>
+    left={(props) =>
       <Image
         style={{ height: 64, width: 64 }}
         source={{

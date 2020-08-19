@@ -144,7 +144,7 @@ const Home = (props: iHome) => {
         open={open}
         onClose={() => setOpenPlaylistMenu(false)}
         side='bottom'
-        hidden={true}
+        hidden={!open}
       >
         <SavedTracks />
       </ViewSlider>
