@@ -7,6 +7,7 @@ import jsx from './ViewSlider.style';
 
 const TOP_DEFAULT_HEIGHT = Dimensions.get("window").height * 0.1;
 const BOTTOM_DEFAULT_HEIGHT = Dimensions.get("window").height * 0.2;
+const MAX_HEIGHT = Dimensions.get("window").height * 0.95 + BOTTOM_DEFAULT_HEIGHT;
 const ANIMATION_DURATION = 250;
 const DEFAULT_POSITION = 0;
 
@@ -48,7 +49,7 @@ const ViewSlider = (props: iViewSliderProps) => {
     useEffect(() => {
         let toHeight;
         if (open) {
-            toHeight = Dimensions.get('window').height * 0.95
+            toHeight = MAX_HEIGHT;
         } else {
             toHeight = defaultHeight;
         }

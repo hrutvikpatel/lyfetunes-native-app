@@ -95,10 +95,6 @@ const Home = (props: iHome) => {
   };
 
   const onSnapToItem = (index: number) => {
-    console.log('onSnapToItem', {
-      index,
-      trackExists: !props.tracks[index]
-    })
     if (!props.tracks[index]) return;
     props.setCurrentTrackIndex(index);
     updatePreviewAudio(index, props.tracks[index]?.previewUrl);
@@ -133,22 +129,24 @@ const Home = (props: iHome) => {
           activeSlideAlignment='start'
           initialNumToRender={5}
           maxToRenderPerBatch={5}
-          onScrollBeginDrag={() => {
-            console.log('onScrolBeginDrag');
-            props.setAudio(undefined);
-          }}
+          onScrollBeginDrag={() => props.setAudio(undefined)}
         />
       </SafeAreaView>
+      <ViewSlider
+        open={false}
+        onClose={() => {}}
+        side='bottom'
+        hidden={false}
+      >
+        <Controls viewPlaylist={() => setOpenPlaylistMenu(true)} />
+      </ViewSlider>
       <ViewSlider
         open={open}
         onClose={() => setOpenPlaylistMenu(false)}
         side='bottom'
-        hidden={false}
+        hidden={true}
       >
-        {open ?
-          <SavedTracks /> :
-          <Controls />
-        }
+        <SavedTracks />
       </ViewSlider>
     </>
   );

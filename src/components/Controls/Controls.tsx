@@ -23,6 +23,7 @@ export interface iControls {
   savedTracks: iTrack[],
   currentTrackIndex: number,
   audio: any,
+  viewPlaylist: (open: boolean) => any,
   setSavedTracks: (savedTracks: iTrack[]) => void,
 };
 
@@ -35,6 +36,7 @@ const Controls = (props: iControls) => {
   const prevAudio = usePrevious(props.audio);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [progressInterval, setProgressInterval] = useState<any>(0);
+  const [disable, setDisable] = useState(false);
 
   const startProgressBar = () => {
     clearInterval(progressInterval);
@@ -54,6 +56,7 @@ const Controls = (props: iControls) => {
     if (props.audio.state !== MediaStates.PLAYING) {
       props.audio.play(() => {
         startProgressBar();
+        setDisable(props.savedTracks?.find((e) => e.uri === props.tracks[props.currentTrackIndex].uri) !== undefined);
       });
     }
 
@@ -67,7 +70,8 @@ const Controls = (props: iControls) => {
 
   const handleAddTrackToPlaylist = () => {
     if (!props.tracks[props.currentTrackIndex]) return;
-
+    if (props.savedTracks?.find((e) => e.uri === props.tracks[props.currentTrackIndex].uri) !== undefined) return;
+    setDisable(true);
     const _savedTracks = [...props.savedTracks];
     _savedTracks.push(props.tracks[props.currentTrackIndex]);
     props.setSavedTracks(_savedTracks);
@@ -83,7 +87,8 @@ const Controls = (props: iControls) => {
           name="playlist-music"
           size={24}
           type='material-community'
-        // onPress={() => props.viewPlaylist(true)}
+          onPress={() => props.viewPlaylist(true)}
+          color={props.theme.colors.text}
         />
         <Button
           uppercase={true}
@@ -97,7 +102,9 @@ const Controls = (props: iControls) => {
           size={24}
           type='material-community'
           onPress={handleAddTrackToPlaylist}
+          color={disable ? props.theme.colors.disabled: props.theme.colors.text}
           disabledStyle={styles.disabledIconStyle}
+          disabled={disable}
         />
       </List.Section>
     </View>

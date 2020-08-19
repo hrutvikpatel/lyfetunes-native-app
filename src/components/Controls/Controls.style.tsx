@@ -11,6 +11,6 @@ export default (theme: any) => StyleSheet.create({
     marginTop: 20
   },
   disabledIconStyle: {
-    backgroundColor: theme.colors.disabled
+    backgroundColor: 'transparent',
   }
 });
