@@ -1,32 +1,99 @@
-import React, { useEffect, useState } from "react";
-import { View } from 'react-native';
+import React, { useState } from "react";
+import { Alert } from 'react-native';
 import {
   withTheme,
-  Surface,
-  Title,
   Paragraph,
   List,
   Button,
 } from 'react-native-paper';
 import { Icon, Image } from 'react-native-elements';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import { connect } from 'react-redux';
 
 import jsx from './SavedTracks.style';
 import { withSlider } from "../ViewSlider/ViewSlider";
 import { iTrack } from "../../utility/MusicService";
+import { setSavedTracks } from "../../actions";
 
 export interface iSavedTracks {
   theme: any,
-  onCloseSlider: () => void,
   savedTracks: iTrack[],
+  onCloseSlider: () => void,
+  setSavedTracks: (savedTracks: iTrack[]) => void
 };
 
 const SavedTracks = (props: iSavedTracks) => {
   const insets = useSafeAreaInsets();
   const styles = jsx(props.theme, insets);
   const [select, toggleSelect] = useState(false);
+  const [selectedTracks, setSelectedTracks] = useState<Set<string>>(new Set());
+
+  const handleSelectRow = (uri: string) => {
+    const newSelectedTracks = new Set(selectedTracks);
+
+    if (selectedTracks.has(uri)) {
+      newSelectedTracks.delete(uri);
+    }
+    else {
+      newSelectedTracks.add(uri);
+    }
+
+    setSelectedTracks(newSelectedTracks);
+  };
+
+  const markAll = () => {
+    if (selectedTracks.size === props.savedTracks.length) return;
+    const newSelectedTracks = new Set(selectedTracks);
+    props.savedTracks?.forEach(({ uri }: iTrack) => {
+      newSelectedTracks.add(uri);
+    });
+    setSelectedTracks(newSelectedTracks);
+  };
+
+  const handleToggleSelection = () => {
+    toggleSelect(!select);
+    setSelectedTracks(new Set());
+  };
+
+  const handleRemove = () => {
+    Alert.alert(
+      '',
+      'Are you sure you want to remove the selected tracks from your saved tracks list?',
+      [
+        {
+          text: "No",
+          style: "cancel"
+        },
+        {
+          text: "Yes",
+          onPress: () => {
+            const newSavedTracks: iTrack[] = [];
+            props.savedTracks?.forEach((track) => {
+              if (!selectedTracks.has(track.uri)) {
+                newSavedTracks.push(track);
+              }
+            });
+            props.setSavedTracks(newSavedTracks);
+            setSelectedTracks(new Set());
+            if (newSavedTracks.length === 0) toggleSelect(false);
+          },
+        },
+      ],
+    );
+  };
+
+  const renderRow = ({ item, index }: { item: iTrack, index: number }) => (
+    <RenderTrack
+      title={item.name}
+      description={item.artists?.map((artist) => artist.name).join(', ')}
+      imageUrl={item.imageUrl}
+      selected={selectedTracks.has(item.uri) && select}
+      onPress={handleSelectRow}
+      selectedRowStyle={styles.selectedRowStyle}
+      uri={item.uri}
+    />
+  );
 
   return (
     <>
@@ -50,18 +117,22 @@ const SavedTracks = (props: iSavedTracks) => {
         <Button
           uppercase={false}
           style={styles.headerRightComponent}
-          onPress={() => toggleSelect(!select)}
+          onPress={handleToggleSelection}
           disabled={props.savedTracks.length === 0}
         >
-          {select ? 'Cancel': 'Select'}
-      </Button>
+          {select ? 'Cancel' : 'Select'}
+        </Button>
       </List.Section>
       <List.Section>
         <FlatList
           style={styles.flatList}
           data={props.savedTracks}
           keyExtractor={(item: iTrack) => item.uri}
-          renderItem={RenderTrack}
+          renderItem={renderRow}
+          extraData={{
+            selectedTracks,
+            select
+          }}
         />
       </List.Section>
       {select &&
@@ -72,10 +143,12 @@ const SavedTracks = (props: iSavedTracks) => {
             labelStyle={styles.selectionButton}
             uppercase={false}
             style={styles.headerLeftComponentMarkAll}
+            onPress={() => markAll()}
           >
             Mark All
           </Button>
           <Button
+            disabled={selectedTracks.size === 0}
             labelStyle={styles.selectionButton}
             uppercase={false}
             style={styles.headerCenterComponent}
@@ -83,9 +156,14 @@ const SavedTracks = (props: iSavedTracks) => {
             Add To Playlist
           </Button>
           <Button
-            labelStyle={styles.selectionButton}
+            disabled={selectedTracks.size === 0}
+            labelStyle={[
+              styles.selectionButton,
+              selectedTracks.size !== 0 ? styles.removeButton : null
+            ]}
             uppercase={false}
             style={styles.headerRightComponent}
+            onPress={handleRemove}
           >
             Remove
           </Button>
@@ -95,23 +173,35 @@ const SavedTracks = (props: iSavedTracks) => {
   );
 };
 
-const RenderTrack = ({ item, index }: { item: iTrack, index: number }) => (
-  <List.Item
-    title={item.name}
-    description={item.artists?.map((artist) => artist.name).join(', ')}
-    left={(props) =>
-      <Image
-        style={{ height: 64, width: 64 }}
-        source={{
-          uri: item.imageUrl,
-        }}
-      />
-    }
-  />
+const RenderTrack = ({ title, description, imageUrl, selected, onPress, selectedRowStyle, uri }: any) => (
+  <TouchableOpacity
+    onPress={() => onPress(uri)}
+  >
+    <List.Item
+      style={[
+        { marginBottom: 5 },
+        selected ? selectedRowStyle : null
+      ]}
+      title={title}
+      description={description}
+      left={(_props) =>
+        <Image
+          style={{ height: 64, width: 64 }}
+          source={{
+            uri: imageUrl,
+          }}
+        />
+      }
+    />
+  </TouchableOpacity>
 );
 
 const mapStateToProps = (state: any) => ({
   savedTracks: state.reducer.savedTracks,
 });
 
-export default connect(mapStateToProps, null)(withTheme(withSlider(SavedTracks)));
+const mapDispatchToProps = (dispatch: Function) => ({
+  setSavedTracks: (savedTracks: iTrack[]) => dispatch(setSavedTracks(savedTracks)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(withTheme(withSlider(SavedTracks)));

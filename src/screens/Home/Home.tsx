@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { View, Alert, Dimensions } from 'react-native';
 import {
   withTheme,
@@ -28,7 +28,7 @@ export interface iHome {
   currentTrackIndex: number,
   setIsNotNewTrack: (isNotNewTrackSet: Set<string>) => void,
   setTracks: (tracks: iTrack[]) => void,
-  setSavedTracks: (tracks: iTrack[]) => void,
+  setSavedTracks: (savedTracks: Map<string, iTrack>) => void,
   setCurrentTrackIndex: (currentTrackIndex: number) => void,
   setAudio: (audio: any) => void,
 };
@@ -127,8 +127,6 @@ const Home = (props: iHome) => {
           sliderHeight={Dimensions.get('window').height * 0.9}
           onBeforeSnapToItem={onSnapToItem}
           activeSlideAlignment='start'
-          initialNumToRender={5}
-          maxToRenderPerBatch={5}
           onScrollBeginDrag={() => props.setAudio(undefined)}
         />
       </SafeAreaView>
@@ -163,7 +161,7 @@ const mapStateToProps = (state: any) => ({
 const mapDispatchToProps = (dispatch: Function) => ({
   setIsNotNewTrack: (isNotNewTrackSet: Set<string>) => dispatch(setIsNotNewTrack(isNotNewTrackSet)),
   setTracks: (tracks: iTrack[]) => dispatch(setTracks(tracks)),
-  setSavedTracks: (savedTracks: iTrack[]) => dispatch(setSavedTracks(savedTracks)),
+  setSavedTracks: (savedTracks: Map<string, iTrack>) => dispatch(setSavedTracks(savedTracks)),
   setCurrentTrackIndex: (currentTrackIndex: number) => dispatch(setCurrentTrackIndex(currentTrackIndex)),
   setAudio: (audio: any) => dispatch(setAudio(audio)),
 });

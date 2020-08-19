@@ -31,4 +31,10 @@ export default (theme: any, insets: EdgeInsets) => StyleSheet.create({
   selectionButton: {
     marginHorizontal: 0,
   },
+  selectedRowStyle: {
+    backgroundColor: '#aff3c7'
+  },
+  removeButton: {
+    color: 'red'
+  }
 });
