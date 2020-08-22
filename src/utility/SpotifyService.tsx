@@ -43,7 +43,9 @@ class SpotifyService implements iSpotifyService {
         ApiScope.PlaylistReadPrivateScope,
         ApiScope.UserLibraryReadScope,
         ApiScope.UserTopReadScope,
-        ApiScope.UserReadPrivateScope
+        ApiScope.UserReadPrivateScope,
+        ApiScope.PlaylistModifyPrivateScope,
+        ApiScope.PlaylistModifyPublicScope,
       ],
     };
     this._session = {
@@ -223,11 +225,8 @@ class SpotifyService implements iSpotifyService {
 
   getUser = async (): Promise<any> => {
     const URL = 'https://api.spotify.com/v1/me';
-
     const config = { headers: { Authorization: `Bearer ${this._session.accessToken}` } };
-
     const { data } = await axios.get(URL, config);
-
     return data;
   };
 
@@ -266,6 +265,22 @@ class SpotifyService implements iSpotifyService {
     userPlaylists.sort((a: iUserPlaylists, b: iUserPlaylists) => a.name.localeCompare(b.name));
 
     return userPlaylists;
+  };
+
+  addTracksToPlaylist = async (playlistId: string, uris: string[]): Promise<void> => {
+    const URL = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+    const config = { headers: { Authorization: `Bearer ${this._session.accessToken}` } };
+
+    while (uris.length > 0) {
+      const batch = uris.splice(0, 100);
+      await axios.post(
+        URL,
+        {
+          uris: batch
+        },
+        config
+      );
+    }
   };
 
 };

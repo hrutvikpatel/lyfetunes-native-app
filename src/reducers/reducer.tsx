@@ -7,10 +7,15 @@ import {
   SET_CURRENT_TRACK_INDEX,
   SET_AUDIO,
   SET_USER,
-  SET_USER_PLAYLISTS
+  SET_USER_PLAYLISTS,
+  SET_SNACK_BAR
 } from '../actions/actions';
 import { iTrack, iUserPlaylists } from '../utility/MusicService';
-import { act } from 'react-test-renderer';
+
+export interface iSnackBar {
+  visible: boolean,
+  description: string,
+};
 
 export interface iReducerState {
   seedArtists: string[],
@@ -21,6 +26,7 @@ export interface iReducerState {
   audio: any,
   user: any,
   userPlaylists: iUserPlaylists[],
+  snackBar: iSnackBar,
 };
 
 export const initialState: iReducerState = {
@@ -32,6 +38,10 @@ export const initialState: iReducerState = {
   audio: undefined,
   user: undefined,
   userPlaylists: [],
+  snackBar: {
+    visible: false,
+    description: '',
+  }
 };
 
 const reducer = (state: iReducerState = initialState, action: any) => {
@@ -75,6 +85,11 @@ const reducer = (state: iReducerState = initialState, action: any) => {
       const { userPlaylists } = action;
       return Object.assign({}, state, {
         userPlaylists
+      });
+    case SET_SNACK_BAR:
+      const { snackBar } = action;
+      return Object.assign({}, state, {
+        snackBar
       });
     default:
       return state;

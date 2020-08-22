@@ -1,4 +1,5 @@
 import { iTrack, iUserPlaylists } from "../utility/MusicService";
+import { iSnackBar } from "../reducers/reducer";
 
 // action types
 export const SET_SEED_ARTISTS = 'SET_SEED_ARTISTS';
@@ -9,6 +10,7 @@ export const SET_CURRENT_TRACK_INDEX = 'SET_CURRENT_TRACK_INDEX';
 export const SET_AUDIO = 'SET_AUDIO';
 export const SET_USER = 'SET_USER';
 export const SET_USER_PLAYLISTS = 'SET_USER_PLAYLISTS';
+export const SET_SNACK_BAR = 'SET_SNACK_BAR';
 
 // actions
 export const setSeedArtists = (seedArtists: string[]) => ({
@@ -49,4 +51,9 @@ export const setUser = (user: any) => ({
 export const setUserPlaylists = (userPlaylists: iUserPlaylists[]) => ({
   type: SET_USER_PLAYLISTS,
   userPlaylists,
+});
+
+export const setSnackBar = (snackBar: iSnackBar) => ({
+  type: SET_SNACK_BAR,
+  snackBar,
 });

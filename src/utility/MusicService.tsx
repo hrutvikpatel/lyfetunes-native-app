@@ -47,5 +47,6 @@ export interface iSpotifyService {
     getRandomSeedArtists: (seedArtists: string[]) => string[],
     getServeralTracks: (trackIds: string[]) => Promise<iTrack[]>,
     getUser: () => Promise<any>,
-    getUserPlaylists: (userId: string) => Promise<iUserPlaylists[]>
+    getUserPlaylists: (userId: string) => Promise<iUserPlaylists[]>,
+    addTracksToPlaylist: (playlistId: string, uris: string[]) => Promise<void>,
 };

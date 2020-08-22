@@ -11,11 +11,12 @@ import { Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 
 import jsx from './Controls.style';
-import { setSavedTracks, setIsNotNewTrack } from '../../actions';
+import { setSavedTracks, setSnackBar } from '../../actions';
 import { iTrack } from '../../utility/MusicService';
 import usePrevious from '../../hooks/usePrevious';
 import { MediaStates } from '@react-native-community/audio-toolkit';
 import { getTime } from '../../utility/misc';
+import { iSnackBar } from '../../reducers/reducer';
 
 export interface iControls {
   theme: any,
@@ -25,6 +26,7 @@ export interface iControls {
   audio: any,
   viewPlaylist: (open: boolean) => any,
   setSavedTracks: (savedTracks: iTrack[]) => void,
+  setSnackBar: (snackBar: iSnackBar) => void,
 };
 
 export interface iRenderProgressTimes {
@@ -56,7 +58,6 @@ const Controls = (props: iControls) => {
     if (props.audio.state !== MediaStates.PLAYING) {
       props.audio.play(() => {
         startProgressBar();
-        setDisable(props.savedTracks?.find((e) => e.uri === props.tracks[props.currentTrackIndex].uri) !== undefined);
       });
     }
 
@@ -68,6 +69,10 @@ const Controls = (props: iControls) => {
     }
   }, []);
 
+  useEffect(() => {
+    setDisable(props.savedTracks?.find((e) => e.uri === props.tracks[props.currentTrackIndex].uri) !== undefined);
+  }, [props.savedTracks, props.currentTrackIndex]);
+
   const handleAddTrackToPlaylist = () => {
     if (!props.tracks[props.currentTrackIndex]) return;
     if (props.savedTracks?.find((e) => e.uri === props.tracks[props.currentTrackIndex].uri) !== undefined) return;
@@ -75,6 +80,7 @@ const Controls = (props: iControls) => {
     const _savedTracks = [...props.savedTracks];
     _savedTracks.push(props.tracks[props.currentTrackIndex]);
     props.setSavedTracks(_savedTracks);
+    props.setSnackBar({ visible: true, description: `Added track to Saved Tracks List` })
   };
 
   return (
@@ -102,7 +108,7 @@ const Controls = (props: iControls) => {
           size={24}
           type='material-community'
           onPress={handleAddTrackToPlaylist}
-          color={disable ? props.theme.colors.disabled: props.theme.colors.text}
+          color={disable ? props.theme.colors.disabled : props.theme.colors.text}
           disabledStyle={styles.disabledIconStyle}
           disabled={disable}
         />
@@ -130,6 +136,7 @@ const mapStateToProps = (state: any) => ({
 
 const mapDispatchToProps = (dispatch: Function) => ({
   setSavedTracks: (savedTracks: iTrack[]) => dispatch(setSavedTracks(savedTracks)),
+  setSnackBar: (snackBar: iSnackBar) => dispatch(setSnackBar(snackBar)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(withTheme(Controls));

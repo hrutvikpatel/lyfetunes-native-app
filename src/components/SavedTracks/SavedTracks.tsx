@@ -12,14 +12,16 @@ import { Icon, Image } from 'react-native-elements';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import { connect } from 'react-redux';
-import {Picker} from '@react-native-community/picker';
+import { Picker } from '@react-native-community/picker';
 
 
 import { withSlider } from "../ViewSlider/ViewSlider";
 import { iTrack, iUserPlaylists } from "../../utility/MusicService";
-import { setSavedTracks, setUserPlaylists } from "../../actions";
+import { setSavedTracks, setUserPlaylists, setSnackBar } from "../../actions";
 import SpotifyService from "../../utility/SpotifyService";
 import jsx from './SavedTracks.style';
+import Wrapper from "../../hoc/Wrapper/Wrapper";
+import { iSnackBar } from "../../reducers/reducer";
 
 export interface iSavedTracks {
   theme: any,
@@ -29,6 +31,7 @@ export interface iSavedTracks {
   onCloseSlider: () => void,
   setSavedTracks: (savedTracks: iTrack[]) => void,
   setUserPlaylists: (userPlaylists: iUserPlaylists[]) => void,
+  setSnackBar: (snackBar: iSnackBar) => void,
 };
 
 export interface iRenderModal {
@@ -44,6 +47,7 @@ const SavedTracks = (props: iSavedTracks) => {
   const [select, toggleSelect] = useState(false);
   const [selectedTracks, setSelectedTracks] = useState<Set<string>>(new Set());
   const [visible, setVisible] = useState(false);
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>('new_playlist');
 
   const fetchData = async () => {
     try {
@@ -52,13 +56,14 @@ const SavedTracks = (props: iSavedTracks) => {
       props.setUserPlaylists(userPlaylists);
     }
     catch {
+
       Alert.alert('Something wrong. Please try restarting the app.');
     }
   };
 
   useEffect(() => {
-    if (props.user) fetchData();
-  }, [props.user]);
+    fetchData();
+  }, []);
 
   const handleSelectRow = (uri: string) => {
     const newSelectedTracks = new Set(selectedTracks);
@@ -114,6 +119,25 @@ const SavedTracks = (props: iSavedTracks) => {
     );
   };
 
+  const handleAddToPlaylist = async() => {
+    setVisible(false);
+    try {
+      const instance = SpotifyService.getInstance();
+      if (selectedPlaylistId === 'new_playlist') {
+
+      }
+      else {
+        const uris: string[] = [...selectedTracks];
+        await instance.addTracksToPlaylist(selectedPlaylistId, uris);
+        props.setSnackBar({ visible: true, description: 'Successfully added tracks to playlist' });
+      }
+      fetchData();
+    }
+    catch (error) {
+      props.setSnackBar({ visible: true, description: 'Something went wrong while adding tracks to playlist' });
+    }
+  };
+
   const renderRow = ({ item, index }: { item: iTrack, index: number }) => (
     <RenderTrack
       title={item.name}
@@ -127,7 +151,7 @@ const SavedTracks = (props: iSavedTracks) => {
   );
 
   return (
-    <>
+    <Wrapper>
       <List.Section
         style={styles.headerContainerStyle}
       >
@@ -201,13 +225,34 @@ const SavedTracks = (props: iSavedTracks) => {
           </Button>
         </List.Section>
       }
-      <RenderModal
-        visible={visible}
-        setVisible={setVisible}
-        modalStyle={styles.modalStyle}
-        userPlaylists={props.userPlaylists}
-      />
-    </>
+
+      <Portal>
+        <Dialog
+          visible={visible}
+          onDismiss={() => setVisible(false)}
+          style={styles.modalStyle}
+        >
+          <Dialog.Title>Select a playlist</Dialog.Title>
+          <Dialog.Content>
+            <Picker
+              selectedValue={selectedPlaylistId}
+              onValueChange={(value) => setSelectedPlaylistId(value.toString())}
+            >
+              <Picker.Item key={'new_playlist'} label={`<-- New Playlist -->`} value={'new_playlist'} />
+              {
+                props.userPlaylists?.map(({ id, name, totalTracks }: iUserPlaylists) => {
+                  return <Picker.Item key={id} label={`${name}: ${totalTracks} tracks`} value={id} />
+                })
+              }
+            </Picker>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setVisible(false)}>Cancel</Button>
+            <Button onPress={handleAddToPlaylist}>Done</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </Wrapper>
   );
 };
 
@@ -234,41 +279,6 @@ const RenderTrack = ({ title, description, imageUrl, selected, onPress, selected
   </TouchableOpacity>
 );
 
-const RenderModal = ({ visible, setVisible, modalStyle, userPlaylists }: iRenderModal) => (
-  <Portal>
-    <Dialog
-      visible={visible}
-      onDismiss={setVisible}
-      style={modalStyle}
-    >
-      <Dialog.Title>Select a playlist</Dialog.Title>
-      <Dialog.Content>
-        <Picker>
-          <RenderPickerItems
-            userPlaylists={userPlaylists}
-          />
-        </Picker>
-      </Dialog.Content>
-      <Dialog.Actions>
-        <Button onPress={() => setVisible(false)}>Done</Button>
-      </Dialog.Actions>
-    </Dialog>
-  </Portal>
-);
-
-const RenderPickerItems = ({ userPlaylists }: { userPlaylists: iUserPlaylists[] }) => {
-  console.debug(userPlaylists);
-  return (
-    <>
-      {
-        userPlaylists?.map(({ id, name, totalTracks }: iUserPlaylists) =>
-          <Picker.Item key={id} label={`${name}: ${totalTracks} tracks`} value={id} />
-        )
-      }
-    </>
-  )
-};
-
 const mapStateToProps = (state: any) => ({
   savedTracks: state.reducer.savedTracks,
   user: state.reducer.user,
@@ -278,6 +288,7 @@ const mapStateToProps = (state: any) => ({
 const mapDispatchToProps = (dispatch: Function) => ({
   setSavedTracks: (savedTracks: iTrack[]) => dispatch(setSavedTracks(savedTracks)),
   setUserPlaylists: (userPlaylists: iUserPlaylists[]) => dispatch(setUserPlaylists(userPlaylists)),
+  setSnackBar: (snackBar: iSnackBar) => dispatch(setSnackBar(snackBar)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(withTheme(withSlider(SavedTracks)));
