@@ -10,7 +10,7 @@ import {
   Button,
 } from 'react-native-paper';
 import { connect } from 'react-redux';
-import { setIsNotNewTrack, setSeedArtists } from '../../actions';
+import { setIsNotNewTrack, setSeedArtists, setUser } from '../../actions';
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
@@ -23,6 +23,7 @@ export interface iSignup {
   navigation: any,
   setSeedArtists: (seedArtists: string[]) => void,
   setIsNotNewTrack: (isNotNewTrackSet: Set<string>) => void,
+  setUser: (user: any) => void,
 };
 
 const Signup = (props: iSignup) => {
@@ -32,8 +33,12 @@ const Signup = (props: iSignup) => {
     try {
       const instance = SpotifyService.getInstance();
       await instance.authorize();
+      
+      const user = await instance.getUser();
       const seedArtists = await instance.getSeedArtists();
       const _nonPlayableTracks = await instance.getTopNonPlayableTracks();
+
+      props.setUser(user);
       props.setSeedArtists(seedArtists);
       props.setIsNotNewTrack(_nonPlayableTracks);
 
@@ -86,6 +91,7 @@ const Signup = (props: iSignup) => {
 const mapDispatchToProps = (dispatch: Function) => ({
   setSeedArtists: (seedArtists: string[]) => dispatch(setSeedArtists(seedArtists)),
   setIsNotNewTrack: (isNotNewTrackSet: Set<string>) => dispatch(setIsNotNewTrack(isNotNewTrackSet)),
+  setUser: (user: any) => dispatch(setUser(user))
 });
 
 export default connect(null, mapDispatchToProps)(withTheme(Signup));

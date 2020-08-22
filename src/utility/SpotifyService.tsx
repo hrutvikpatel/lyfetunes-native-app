@@ -22,7 +22,7 @@ import {
 import axios from 'axios';
 
 import {
-  iSpotifyService, iTrack, iArtist,
+  iSpotifyService, iTrack, iArtist, iUserPlaylists,
 
 } from './MusicService';
 
@@ -39,10 +39,11 @@ class SpotifyService implements iSpotifyService {
       tokenRefreshURL: tokenRefreshURL,
       tokenSwapURL: tokenSwapURL,
       scopes: [
-        ApiScope.AppRemoteControlScope, 
+        ApiScope.AppRemoteControlScope,
         ApiScope.PlaylistReadPrivateScope,
         ApiScope.UserLibraryReadScope,
         ApiScope.UserTopReadScope,
+        ApiScope.UserReadPrivateScope
       ],
     };
     this._session = {
@@ -61,7 +62,7 @@ class SpotifyService implements iSpotifyService {
     return SpotifyService.instance;
   }
 
-  authorize = async(): Promise<void> => {
+  authorize = async (): Promise<void> => {
     try {
       SpotifyRemote.disconnect();
       SpotifyAuth.endSession();
@@ -69,7 +70,7 @@ class SpotifyService implements iSpotifyService {
       this._session = await SpotifyAuth.authorize(this._spotifyConfig);
       // await SpotifyRemote.connect(this._session.accessToken);
     }
-    catch(error) {
+    catch (error) {
       console.warn(JSON.stringify(error));
       throw 'Please try again';
     }
@@ -92,7 +93,7 @@ class SpotifyService implements iSpotifyService {
     }
   };
 
-  getSeedArtists = async(): Promise<string[]> => {
+  getSeedArtists = async (): Promise<string[]> => {
     const seedArtists: string[] = [];
     const URL = 'https://api.spotify.com/v1/me/top/artists';
     const config = {
@@ -104,12 +105,12 @@ class SpotifyService implements iSpotifyService {
     };
     const result = await axios.get(URL, config);
 
-    result?.data?.items?.forEach(({ id }: any) => seedArtists.push(id) );
+    result?.data?.items?.forEach(({ id }: any) => seedArtists.push(id));
 
     return seedArtists;
   };
 
-  getTopNonPlayableTracks = async(): Promise<Set<string>> => {
+  getTopNonPlayableTracks = async (): Promise<Set<string>> => {
     const nonPlayableTracks: Set<string> = new Set<string>();
     const URL = 'https://api.spotify.com/v1/me/top/tracks';
     const config = {
@@ -121,7 +122,7 @@ class SpotifyService implements iSpotifyService {
     };
     const result = await axios.get(URL, config);
 
-    result?.data?.items?.forEach(({ id }: any) => nonPlayableTracks.add(id) );
+    result?.data?.items?.forEach(({ id }: any) => nonPlayableTracks.add(id));
 
     return nonPlayableTracks;
   };
@@ -147,14 +148,14 @@ class SpotifyService implements iSpotifyService {
     let taken = new Array(length);
 
     while (randomAmount--) {
-        const x = Math.floor(Math.random() * length);
-        result[randomAmount] = seedArtists[x in taken ? taken[x] : x];
-        taken[x] = --length in taken ? taken[length] : length;
+      const x = Math.floor(Math.random() * length);
+      result[randomAmount] = seedArtists[x in taken ? taken[x] : x];
+      taken[x] = --length in taken ? taken[length] : length;
     }
     return result;
   };
 
-  getServeralTracks = async(trackIds: string[]): Promise<iTrack[]> => {
+  getServeralTracks = async (trackIds: string[]): Promise<iTrack[]> => {
     const _trackIds = [...trackIds];
     const tracks: iTrack[] = [];
     const URL = 'https://api.spotify.com/v1/tracks';
@@ -198,9 +199,9 @@ class SpotifyService implements iSpotifyService {
     return tracks;
   };
 
-  getRecommendations = async(seedArtists: string[]): Promise<string[]> => {
+  getRecommendations = async (seedArtists: string[]): Promise<string[]> => {
     const URL = 'https://api.spotify.com/v1/recommendations';
-    
+
     const config = {
       params: {
         limit: 100,
@@ -213,11 +214,58 @@ class SpotifyService implements iSpotifyService {
 
     const trackIds: string[] = [];
 
-    result?.data?.tracks.forEach(({ id }: any)=> {
-        trackIds.push(id);
+    result?.data?.tracks.forEach(({ id }: any) => {
+      trackIds.push(id);
     });
 
     return trackIds;
+  };
+
+  getUser = async (): Promise<any> => {
+    const URL = 'https://api.spotify.com/v1/me';
+
+    const config = { headers: { Authorization: `Bearer ${this._session.accessToken}` } };
+
+    const { data } = await axios.get(URL, config);
+
+    return data;
+  };
+
+  getUserPlaylists = async (userId: string): Promise<iUserPlaylists[]> => {
+
+    let result = undefined;
+    const userPlaylists: iUserPlaylists[] = [];
+    let URL = 'https://api.spotify.com/v1/me/playlists';
+    let config = {
+      params: {
+        limit: 50,
+      },
+      headers: { Authorization: `Bearer ${this._session.accessToken}` }
+    };
+
+    const extractPlaylists = (data?: any) => {
+      data?.items?.forEach(({ id, name, tracks, owner }: any) => {
+        if (owner?.id === userId && tracks ) {
+          userPlaylists.push({
+            id,
+            name,
+            totalTracks: tracks?.total,
+          });
+        }
+      })
+    };
+
+    do {
+      if (result !== undefined) URL = result?.data?.next;
+
+      result = await axios.get(URL, config);
+      extractPlaylists(result?.data);
+    }
+    while (result?.data?.next !== null);
+
+    userPlaylists.sort((a: iUserPlaylists, b: iUserPlaylists) => a.name.localeCompare(b.name));
+
+    return userPlaylists;
   };
 
 };

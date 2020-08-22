@@ -7,7 +7,7 @@ export enum SearchType {
 export interface iArtist {
     id: string,
     name: string,
-}
+};
 
 export interface iRecommendations {
     tracks: string[],
@@ -20,6 +20,12 @@ export interface iArtist {
     id: string,
     name: string,
 };
+
+export interface iUserPlaylists {
+    id: string,
+    name: string,
+    totalTracks: number,
+}
 
 export interface iTrack {
     artists: iArtist[],
@@ -40,4 +46,6 @@ export interface iSpotifyService {
     getRecommendations: (seedArtists: string[]) => Promise<string[]>,
     getRandomSeedArtists: (seedArtists: string[]) => string[],
     getServeralTracks: (trackIds: string[]) => Promise<iTrack[]>,
+    getUser: () => Promise<any>,
+    getUserPlaylists: (userId: string) => Promise<iUserPlaylists[]>
 };

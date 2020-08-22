@@ -1,4 +1,4 @@
-import { iTrack } from "../utility/MusicService";
+import { iTrack, iUserPlaylists } from "../utility/MusicService";
 
 // action types
 export const SET_SEED_ARTISTS = 'SET_SEED_ARTISTS';
@@ -7,6 +7,8 @@ export const SET_TRACKS = 'SET_TRACKS';
 export const SET_SAVED_TRACKS = 'SET_SAVED_TRACKS';
 export const SET_CURRENT_TRACK_INDEX = 'SET_CURRENT_TRACK_INDEX';
 export const SET_AUDIO = 'SET_AUDIO';
+export const SET_USER = 'SET_USER';
+export const SET_USER_PLAYLISTS = 'SET_USER_PLAYLISTS';
 
 // actions
 export const setSeedArtists = (seedArtists: string[]) => ({
@@ -37,4 +39,14 @@ export const setCurrentTrackIndex = (currentTrackIndex: number) => ({
 export const setAudio = (audio: any) => ({
   type: SET_AUDIO,
   audio,
-})
+});
+
+export const setUser = (user: any) => ({
+  type: SET_USER,
+  user
+});
+
+export const setUserPlaylists = (userPlaylists: iUserPlaylists[]) => ({
+  type: SET_USER_PLAYLISTS,
+  userPlaylists,
+});

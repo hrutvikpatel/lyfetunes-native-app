@@ -5,9 +5,12 @@ import {
   SET_TRACKS,
   SET_SAVED_TRACKS,
   SET_CURRENT_TRACK_INDEX,
-  SET_AUDIO
+  SET_AUDIO,
+  SET_USER,
+  SET_USER_PLAYLISTS
 } from '../actions/actions';
-import { iTrack } from '../utility/MusicService';
+import { iTrack, iUserPlaylists } from '../utility/MusicService';
+import { act } from 'react-test-renderer';
 
 export interface iReducerState {
   seedArtists: string[],
@@ -16,6 +19,8 @@ export interface iReducerState {
   savedTracks: iTrack[],
   currentTrackIndex: number,
   audio: any,
+  user: any,
+  userPlaylists: iUserPlaylists[],
 };
 
 export const initialState: iReducerState = {
@@ -25,6 +30,8 @@ export const initialState: iReducerState = {
   savedTracks: [],
   currentTrackIndex: 0,
   audio: undefined,
+  user: undefined,
+  userPlaylists: [],
 };
 
 const reducer = (state: iReducerState = initialState, action: any) => {
@@ -58,6 +65,16 @@ const reducer = (state: iReducerState = initialState, action: any) => {
       const { audio } = action;
       return Object.assign({}, state, {
         audio
+      });
+    case SET_USER:
+      const { user } = action;
+      return Object.assign({}, state, {
+        user
+      });
+    case SET_USER_PLAYLISTS:
+      const { userPlaylists } = action;
+      return Object.assign({}, state, {
+        userPlaylists
       });
     default:
       return state;
