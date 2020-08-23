@@ -41,10 +41,18 @@ const Track = (props: iTrackView) => {
         </Surface>
       </List.Section>
       <List.Section>
-        <Title>{props.track.name}</Title>
+        <Title
+          numberOfLines={1}
+        >
+          {props.track.name}
+        </Title>
       </List.Section>
       <List.Section>
-        <Paragraph>{props.track.artists.map((artist) => artist.name).join(', ')}</Paragraph>
+        <Paragraph
+          numberOfLines={1}
+        >
+          {props.track.artists.map((artist) => artist.name).join(', ')}
+        </Paragraph>
       </List.Section>
     </View>
   );

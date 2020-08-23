@@ -3,6 +3,7 @@ import { View, Alert, Dimensions } from 'react-native';
 import {
   withTheme,
   Paragraph,
+  ActivityIndicator,
 } from 'react-native-paper';
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { connect } from 'react-redux';
@@ -43,11 +44,12 @@ const Home = (props: iHome) => {
   const fetchTracks = async (): Promise<void> => {
     try {
       clearAudioFromMemory();
+      props.setTracks([]);
       const instance = SpotifyService.getInstance();
       const recommendedTrackIds = await instance.getRecommendations(props.seedArtists);
       const { playableTracks, nonPlayableTracks } = instance.getPlayableTracks(recommendedTrackIds, props.isNotNewTrackSet);
       const tracks = await instance.getServeralTracks(playableTracks);
-      
+
       props.setTracks(tracks);
       props.setIsNotNewTrack(nonPlayableTracks);
       updatePreviewAudio(0, tracks[0]?.previewUrl);
@@ -58,13 +60,11 @@ const Home = (props: iHome) => {
   };
 
   const clearAudioFromMemory = () => {
-    props.setAudio(undefined);
-    previewAudio?.forEach((audio, index) => {
-      audio.destroy(() => {
-        console.log('track memory cleared', index)
-      });
+    previewAudio?.forEach((audio) => {
+      audio.destroy();
     });
     setPreviewAudio(new Map());
+    props.setAudio(undefined);
   };
 
   useEffect(() => {
@@ -113,30 +113,47 @@ const Home = (props: iHome) => {
             <Paragraph>Now Playing</Paragraph>
           </View>
         </ViewSlider>
-        <Carousel
-          data={props.tracks}
-          renderItem={({ item, index }: { item: iTrack, index: number }) =>
-            <Track
-              track={item}
-              trackIndex={index}
-              currentIndex={props.currentTrackIndex}
-            />
-          }
-          vertical={true}
-          itemHeight={Dimensions.get('window').height * 0.60}
-          sliderHeight={Dimensions.get('window').height * 0.9}
-          onBeforeSnapToItem={onSnapToItem}
-          activeSlideAlignment='start'
-          onScrollBeginDrag={() => props.setAudio(undefined)}
-        />
+        {
+          props.tracks.length > 0 ?
+            <Carousel
+              data={props.tracks}
+              renderItem={({ item, index }: { item: iTrack, index: number }) =>
+                <Track
+                  track={item}
+                  trackIndex={index}
+                  currentIndex={props.currentTrackIndex}
+                />
+              }
+              vertical={true}
+              itemHeight={Dimensions.get('window').height * 0.60}
+              sliderHeight={Dimensions.get('window').height * 0.9}
+              onBeforeSnapToItem={onSnapToItem}
+              activeSlideAlignment='start'
+              onScrollBeginDrag={() => props.setAudio(undefined)}
+            /> :
+            <View
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100%',
+                width: '100%',
+                flexDirection: 'column'
+              }}
+            >
+              <ActivityIndicator animating={true} />
+            </View>
+        }
       </SafeAreaView>
       <ViewSlider
         open={false}
-        onClose={() => {}}
+        onClose={() => { }}
         side='bottom'
         hidden={false}
       >
-        <Controls viewPlaylist={() => setOpenPlaylistMenu(true)} />
+        <Controls
+          viewPlaylist={() => setOpenPlaylistMenu(true)}
+          refresh={fetchTracks}
+        />
       </ViewSlider>
       <ViewSlider
         open={open}

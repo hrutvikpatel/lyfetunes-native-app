@@ -7,4 +7,9 @@ export default (theme: any, insets: EdgeInsets) => StyleSheet.create({
     height: '100%',
     width: '100%',
   },
+  snackBar: {
+    zIndex: 2000,
+    position: 'absolute',
+    top: 0,
+  }
 });

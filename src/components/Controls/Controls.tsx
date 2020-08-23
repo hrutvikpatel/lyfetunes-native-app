@@ -27,6 +27,7 @@ export interface iControls {
   viewPlaylist: (open: boolean) => any,
   setSavedTracks: (savedTracks: iTrack[]) => void,
   setSnackBar: (snackBar: iSnackBar) => void,
+  refresh: () => void,
 };
 
 export interface iRenderProgressTimes {
@@ -91,21 +92,21 @@ const Controls = (props: iControls) => {
       <List.Section style={styles.actions}>
         <Icon
           name="playlist-music"
-          size={24}
+          size={32}
           type='material-community'
           onPress={() => props.viewPlaylist(true)}
           color={props.theme.colors.text}
         />
         <Button
           uppercase={true}
-          // onPress={() => props.refresh()}
+          onPress={() => props.refresh()}
           mode='contained'
         >
           Refresh
       </Button>
         <Icon
           name="playlist-plus"
-          size={24}
+          size={32}
           type='material-community'
           onPress={handleAddTrackToPlaylist}
           color={disable ? props.theme.colors.disabled : props.theme.colors.text}

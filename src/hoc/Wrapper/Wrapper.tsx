@@ -21,14 +21,15 @@ const Wrapper = (props: iWrapper) => {
 
   return (
     <>
-      {props.children}
       <Snackbar
+        wrapperStyle={styles.snackBar}
         visible={props.snackBar.visible}
-        onDismiss={() => props.setSnackBar({ visible: false, description: ''})}
+        onDismiss={() => props.setSnackBar({ visible: false, description: '' })}
         duration={1500}
       >
         {props.snackBar.description}
       </Snackbar>
+      {props.children}
     </>
   )
 };

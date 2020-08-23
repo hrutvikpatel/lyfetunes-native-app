@@ -49,4 +49,5 @@ export interface iSpotifyService {
     getUser: () => Promise<any>,
     getUserPlaylists: (userId: string) => Promise<iUserPlaylists[]>,
     addTracksToPlaylist: (playlistId: string, uris: string[]) => Promise<void>,
+    createPlaylist: (playlistName: string, userId: string) => Promise<string>,
 };

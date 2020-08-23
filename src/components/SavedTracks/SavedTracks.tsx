@@ -6,7 +6,8 @@ import {
   List,
   Button,
   Portal,
-  Dialog
+  Dialog,
+  TextInput
 } from 'react-native-paper';
 import { Icon, Image } from 'react-native-elements';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +23,7 @@ import SpotifyService from "../../utility/SpotifyService";
 import jsx from './SavedTracks.style';
 import Wrapper from "../../hoc/Wrapper/Wrapper";
 import { iSnackBar } from "../../reducers/reducer";
+import AddToPlaylistModal from "../AddToPlaylistModal/AddToPlaylistModal";
 
 export interface iSavedTracks {
   theme: any,
@@ -34,20 +36,12 @@ export interface iSavedTracks {
   setSnackBar: (snackBar: iSnackBar) => void,
 };
 
-export interface iRenderModal {
-  visible: boolean,
-  setVisible: any,
-  modalStyle: any,
-  userPlaylists: iUserPlaylists[],
-};
-
 const SavedTracks = (props: iSavedTracks) => {
   const insets = useSafeAreaInsets();
   const styles = jsx(props.theme, insets);
   const [select, toggleSelect] = useState(false);
+  const [visibleModal, setVisibleModal] = useState(false);
   const [selectedTracks, setSelectedTracks] = useState<Set<string>>(new Set());
-  const [visible, setVisible] = useState(false);
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>('new_playlist');
 
   const fetchData = async () => {
     try {
@@ -110,6 +104,7 @@ const SavedTracks = (props: iSavedTracks) => {
                 newSavedTracks.push(track);
               }
             });
+            props.setSnackBar({ visible: true, description: `${selectedTracks.length} track(s) removed!` });
             props.setSavedTracks(newSavedTracks);
             setSelectedTracks(new Set());
             if (newSavedTracks.length === 0) toggleSelect(false);
@@ -117,25 +112,6 @@ const SavedTracks = (props: iSavedTracks) => {
         },
       ],
     );
-  };
-
-  const handleAddToPlaylist = async() => {
-    setVisible(false);
-    try {
-      const instance = SpotifyService.getInstance();
-      if (selectedPlaylistId === 'new_playlist') {
-
-      }
-      else {
-        const uris: string[] = [...selectedTracks];
-        await instance.addTracksToPlaylist(selectedPlaylistId, uris);
-        props.setSnackBar({ visible: true, description: 'Successfully added tracks to playlist' });
-      }
-      fetchData();
-    }
-    catch (error) {
-      props.setSnackBar({ visible: true, description: 'Something went wrong while adding tracks to playlist' });
-    }
   };
 
   const renderRow = ({ item, index }: { item: iTrack, index: number }) => (
@@ -151,7 +127,7 @@ const SavedTracks = (props: iSavedTracks) => {
   );
 
   return (
-    <Wrapper>
+    <>
       <List.Section
         style={styles.headerContainerStyle}
       >
@@ -207,7 +183,7 @@ const SavedTracks = (props: iSavedTracks) => {
             labelStyle={styles.selectionButton}
             uppercase={false}
             style={styles.headerCenterComponent}
-            onPress={() => setVisible(true)}
+            onPress={() => setVisibleModal(true)}
           >
             Add To Playlist
           </Button>
@@ -225,34 +201,13 @@ const SavedTracks = (props: iSavedTracks) => {
           </Button>
         </List.Section>
       }
-
-      <Portal>
-        <Dialog
-          visible={visible}
-          onDismiss={() => setVisible(false)}
-          style={styles.modalStyle}
-        >
-          <Dialog.Title>Select a playlist</Dialog.Title>
-          <Dialog.Content>
-            <Picker
-              selectedValue={selectedPlaylistId}
-              onValueChange={(value) => setSelectedPlaylistId(value.toString())}
-            >
-              <Picker.Item key={'new_playlist'} label={`<-- New Playlist -->`} value={'new_playlist'} />
-              {
-                props.userPlaylists?.map(({ id, name, totalTracks }: iUserPlaylists) => {
-                  return <Picker.Item key={id} label={`${name}: ${totalTracks} tracks`} value={id} />
-                })
-              }
-            </Picker>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setVisible(false)}>Cancel</Button>
-            <Button onPress={handleAddToPlaylist}>Done</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
-    </Wrapper>
+      <AddToPlaylistModal
+        visible={visibleModal}
+        setVisible={setVisibleModal}
+        fetchUserPlaylists={fetchData}
+        selectedTracks={selectedTracks}
+      />
+    </>
   );
 };
 

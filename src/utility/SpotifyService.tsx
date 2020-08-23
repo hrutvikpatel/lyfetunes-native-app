@@ -36,8 +36,8 @@ class SpotifyService implements iSpotifyService {
     this._spotifyConfig = {
       clientID: SPOTIFY_CLIENT_ID,
       redirectURL: SPOTIFY_REDIRECT_URL,
-      tokenRefreshURL: tokenRefreshURL,
-      tokenSwapURL: tokenSwapURL,
+      tokenRefreshURL: 'http://64.227.109.86:3000/refresh',
+      tokenSwapURL: 'http://64.227.109.86:3000/swap',
       scopes: [
         ApiScope.AppRemoteControlScope,
         ApiScope.PlaylistReadPrivateScope,
@@ -244,7 +244,7 @@ class SpotifyService implements iSpotifyService {
 
     const extractPlaylists = (data?: any) => {
       data?.items?.forEach(({ id, name, tracks, owner }: any) => {
-        if (owner?.id === userId && tracks ) {
+        if (owner?.id === userId && tracks) {
           userPlaylists.push({
             id,
             name,
@@ -282,6 +282,22 @@ class SpotifyService implements iSpotifyService {
       );
     }
   };
+
+  createPlaylist = async (playlistName: string, userId: string): Promise<string> => {
+    const URL = `https://api.spotify.com/v1/users/${userId}/playlists`;
+    const config = { headers: { Authorization: `Bearer ${this._session.accessToken}` } };
+
+    const result = await axios.post(
+      URL,
+      {
+        name: playlistName,
+        public: false,
+      },
+      config,
+    );
+
+    return result.data.id;
+  }
 
 };
 

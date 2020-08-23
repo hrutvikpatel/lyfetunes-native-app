@@ -59,7 +59,7 @@ const Signup = (props: iSignup) => {
       >
         <List.Section style={styles.header}>
           <Title>LyfeTunes</Title>
-          <Caption>Discover new tracks by listening to the best parts first.</Caption>
+          <Caption>Discover new tracks by listening to the best part first.</Caption>
         </List.Section>
 
         <List.Section>
